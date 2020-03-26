@@ -35,9 +35,9 @@ const addEmojiToName = item => {
 	if (item.includes(`Woo`)) {
 		return item.replace(`Woo`, `:woologo: Woo`)
 	} else if (item.includes(`JP`)) {
-		item.replace(`JP`, `:jetpack: JP`)
+		return item.replace(`JP`, `:jetpack: JP`)
 	} else if (item.includes(`WP`)) {
-		item.replace(`WP`, `:wp: WP`)
+		return item.replace(`WP`, `:wp: WP`)
 	} else {
 		return item
 	}
