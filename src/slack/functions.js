@@ -1,4 +1,4 @@
-import { getTheDateBlocks, postToThreadBlocks } from "./utils"
+import { getTheDateBlocks, postToThreadBlocks, buildTheMessage } from "./utils"
 import { slackBotToken } from "../../config";
 
 export let getTheDate = async (json) => {
@@ -23,10 +23,19 @@ export let getTheDate = async (json) => {
 }
 
 export let postToThread = async (json, content) => {
+    let blocks
     let slackApiUrl = json.response_url
-    let dataForFetch = {
-        blocks: postToThreadBlocks(content)
+
+    if (content[0].summary) {
+        blocks = buildTheMessage(content)
+    } else {
+        blocks = postToThreadBlocks(content)
     }
+
+    let dataForFetch = {
+        blocks: blocks
+    }
+    
     let optionsForFetch = {
         'method': `POST`,
         'body': JSON.stringify(dataForFetch),
@@ -35,6 +44,7 @@ export let postToThread = async (json, content) => {
             'Content-Type': 'application/json',
         }
     }
+    
     let response = await fetch(slackApiUrl, optionsForFetch)
     return response
 }
