@@ -1,3 +1,4 @@
+import { convertToJson } from "../functions"
 import { postToThread } from "../slack/functions"
 
 export default async request => {
@@ -6,27 +7,27 @@ export default async request => {
     var json = JSON.parse(jsonOld.payload)
 
     try {
-        var myHeaders = new Headers();
-        myHeaders.append("Accept", "*/*");
-        myHeaders.append("Cache-Control", "no-cache");
-        myHeaders.append("Host", "ical-to-json.herokuapp.com");
-        myHeaders.append("Accept-Encoding", "gzip, deflate, br");
-        myHeaders.append("Connection", "keep-alive");
-
-        var requestOptions = {
-            method: 'GET',
-            headers: myHeaders,
-            redirect: 'follow'
-        };
-
         if (json && json.type === `block_actions`) {
             if (json.actions[0].type === `datepicker`) {
-                let jsonData = await fetch("https://ical-to-json.herokuapp.com/convert.json?url=https%3A%2F%2Fpublic-api.wordpress.com%2Fwpcom%2Fv2%2Fhappytools%2Finternal%2Fv1%2Fschedule%2Fcalendar%2FaEdmOHVjb2F6TWZNeGNnYnhRcHM2RmlwZjdZajFEZ1JYLTZKTDBuNmc2WDJtZVM0cnQ3R0p0dzJuN2xDMHc9PQ%3D%3D", requestOptions)
-                let selectedDate = jsonData.vcalendar[0].vevent[0].dtstart
-                await postToThread(json, selectedDate)
+                let finalResults = ''
+                let selectedDate = json.actions[0].selected_date
+                let convertedDate = selectedDate.replace(`-`, ``)
+                
+                let calendarData = await convertToJson(`https://public-api.wordpress.com/wpcom/v2/happytools/internal/v1/schedule/calendar/STZZbEtkZ0hJX2c4ZC1jNFN6VXpyY1RRblh1dXJtc0dSY1V3aFM2a29jQ1E4bXlxQU44MGRlSVd1TzVKZnc9PQ==`)
+
+                const resultHere = calendarData.filter(itemHere => {
+                    return itemHere.startDate.includes(`20200324`)
+                })
+
+                // finalResults = `\• Start: ${resultHere[0].startDate}\n\• End: ${resultHere[0].endDate}\n\• Type of shift: ${resultHere[0].summary}\n---\n`
+                
+                resultHere.forEach(item => {
+                    finalResults += `\• Start: ${item.startDate}\n\• End: ${item.endDate}\n\• Type of shift: ${item.summary}\n---\n`
+                })
+                
+                await postToThread(json, finalResults)
             }
-            return new Response(`OK`, { status: 200 }) 
-        }
+        } 
     } catch(error) {
         return new Response(`Error: ${error}`, { status: 500 }) 
     }
