@@ -1,5 +1,5 @@
 import { convertToJson } from "../functions"
-import { postToThread } from "../slack/functions"
+import { postToThread, deleteMessage } from "../slack/functions"
 
 export default async request => {
     var formDataBody = await request.formData()
@@ -18,8 +18,7 @@ export default async request => {
                     return item.startDate.includes(`${convertedDate}`)
                 })
                 
-                await postToThread(json, `Done! The schedule for ${selectedDate} has been sent. Use the datepicker below if you want to make another search. :arrow_down:`, true, true)
-                await postToThread(json, result)
+                await postToThread(json, result, true)
             }
         } 
     } catch(error) {

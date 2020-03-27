@@ -5,8 +5,10 @@ export default async request => {
     const { event } = JSON.parse(body)
 
     try {
-        if (event.type && event.type === `app_mention`) {
-            await getTheDate(event)
+        if (event.type && event.type === `message`) {
+            if (event.user) {
+                await getTheDate(event)
+            }
             return new Response(`Done.`, { status: 200 }) 
         } else {
             return new Response(`Not an event.`, { status: 200 }) 

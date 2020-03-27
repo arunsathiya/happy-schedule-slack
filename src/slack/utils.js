@@ -31,34 +31,6 @@ const postToThreadBlocks = content => {
 	]
 }
 
-const getAnotherDateBlocks = (content, date) => {
-    return [
-		{
-			"type": "section",
-			"text": {
-				"type": "mrkdwn",
-				"text": `${content}`
-			}
-		},
-		{
-			"type": "section",
-			"text": {
-				"type": "mrkdwn",
-				"text": "Pick a date to find its schedule."
-			},
-			"accessory": {
-				"type": "datepicker",
-				"initial_date": `${date}`,
-				"placeholder": {
-					"type": "plain_text",
-					"text": "Select a date",
-					"emoji": true
-				}
-			}
-		}
-	]
-}
-
 const addEmojiToName = item => {
 	if (item.includes(`Woo`)) {
 		return item.replace(`Woo`, `:woologo: Woo`)
@@ -71,18 +43,62 @@ const addEmojiToName = item => {
 	}
 }
 
+const convertToUtc = item => {
+	let getTheTime = item.match(/\T(.*)\Z/).pop()
+	let getHourMinute = getTheTime.slice(0, 4)
+	return getHourMinute
+}
+
 const buildTheMessageBlocks = (items, selectedDate) => {
-	let finalMessage = ''
+	let scheduleList = ''
 
 	items.forEach(item => {
-		finalMessage += `{ "type": "section", "text": { "type": "mrkdwn", "text": "${addEmojiToName(item.summary)}" } }, { "type": "context", "elements": [ { "type": "mrkdwn", "text": "${item.startDate} - ${item.endDate}" } ] },\n`
+		scheduleList += `{
+			"type": "section",
+			"text": {
+				"type": "mrkdwn",
+				"text": "${addEmojiToName(item.summary)}"
+			}
+		},
+		{
+			"type": "context",
+			"elements": [
+				{
+					"type": "mrkdwn",
+					"text": "${convertToUtc(item.startDate)} UTC - ${convertToUtc(item.endDate)} UTC"
+				}
+			]
+		},`
 	})
 
-	let textToStartWith = `{ "type": "section", "text": { "type": "mrkdwn", "text": "Your schedule for ${selectedDate} is below :arrow_down:" } }`
+	let scheduleDate = `{
+		"type": "section",
+		"text": {
+			"type": "mrkdwn",
+			"text": "Your schedule for ${selectedDate} is below :arrow_down:"
+		}
+	}`
 
-	finalMessage = `[ ${textToStartWith}, ${finalMessage} ]`
+	let chooseDate = `{
+		"type": "section",
+		"text": {
+			"type": "mrkdwn",
+			"text": "Pick a date to find its schedule."
+		},
+		"accessory": {
+			"type": "datepicker",
+			"initial_date": "${selectedDate}",
+			"placeholder": {
+				"type": "plain_text",
+				"text": "Select a date",
+				"emoji": true
+			}
+		}
+	}`
+
+	let finalMessage = `[ ${scheduleDate}, ${scheduleList} ${chooseDate} ]`
 
 	return finalMessage
 }
 
-export { getTheDateBlocks, postToThreadBlocks, buildTheMessageBlocks, getAnotherDateBlocks }
+export { getTheDateBlocks, postToThreadBlocks, buildTheMessageBlocks }
