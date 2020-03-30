@@ -1,4 +1,4 @@
-import { convertToJson } from "../functions"
+import { convertToJson, ifObjectIsEmpty } from "../functions"
 import { postToThread, deleteMessage } from "../slack/functions"
 
 export default async request => {
@@ -18,7 +18,11 @@ export default async request => {
                     return item.startDate.includes(`${convertedDate}`)
                 })
                 
-                await postToThread(json, result, true)
+                if (Object.keys(result).length === 0) {
+                    await postToThread(json, `No shifts found. Perhaps your AFK day?`, true)
+                } else {
+                    await postToThread(json, result, true)
+                }
             }
         } 
     } catch(error) {

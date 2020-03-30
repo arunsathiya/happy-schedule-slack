@@ -1,4 +1,4 @@
-import { getTheDateBlocks, postToThreadBlocks, getAnotherDateBlocks, buildTheMessageBlocks } from "./utils"
+import { getTheDateBlocks, postToThreadBlocks, buildTheMessageBlocks } from "./utils"
 import { slackBotToken } from "../../config";
 
 export let getTheDate = async (json) => {
@@ -49,13 +49,44 @@ export let postToThread = async (json, content, inlineResponse) => {
             blocks: blocks
         }
     } else {
-        slackApiUrl = `https://slack.com/api/chat.postMessage`
-        dataForFetch = {
-            username: `Happy Schedule`,
-            icon_emoji: `:happy-schedule:`,
-            channel: json.container.channel_id,
-            thread_ts: json.container.thread_ts,
-            blocks: blocks
+        if (json.container) {
+            if (json.container.thread_ts) {
+                slackApiUrl = `https://slack.com/api/chat.postMessage`
+                dataForFetch = {
+                    username: `Happy Schedule`,
+                    icon_emoji: `:happy-schedule:`,
+                    channel: json.container.channel_id,
+                    thread_ts: json.container.thread_ts,
+                    blocks: blocks
+                }
+            } else {
+                slackApiUrl = `https://slack.com/api/chat.postMessage`
+                dataForFetch = {
+                    username: `Happy Schedule`,
+                    icon_emoji: `:happy-schedule:`,
+                    channel: json.container.channel_id,
+                    blocks: blocks
+                }
+            }
+        } else {
+            if (json.thread_ts) {
+                slackApiUrl = `https://slack.com/api/chat.postMessage`
+                dataForFetch = {
+                    username: `Happy Schedule`,
+                    icon_emoji: `:happy-schedule:`,
+                    channel: json.channel,
+                    thread_ts: json.ts,
+                    blocks: blocks
+                }
+            } else {
+                slackApiUrl = `https://slack.com/api/chat.postMessage`
+                dataForFetch = {
+                    username: `Happy Schedule`,
+                    icon_emoji: `:happy-schedule:`,
+                    channel: json.channel,
+                    blocks: blocks
+                }
+            }
         }
     }
     
@@ -68,24 +99,6 @@ export let postToThread = async (json, content, inlineResponse) => {
         }
     }
     
-    let response = await fetch(slackApiUrl, optionsForFetch)
-    return response
-}
-
-export let deleteMessage = async (json) => {
-    let slackApiUrl = `https://slack.com/api/chat.delete`
-    let dataForFetch = {
-        channel: json.container.channel_id,
-        ts: json.container.message_ts
-    }
-    let optionsForFetch = {
-        'method': `POST`,
-        'body': JSON.stringify(dataForFetch),
-        'headers': {
-            'Authorization': `Bearer ${slackBotToken}`,
-            'Content-Type': 'application/json',
-        }
-    }
     let response = await fetch(slackApiUrl, optionsForFetch)
     return response
 }
