@@ -1,5 +1,5 @@
 import { convertToJson, ifObjectIsEmpty } from "../functions"
-import { postToThread, deleteMessage } from "../slack/functions"
+import { postToThread, deleteMessage, getTheCalendarLink, hardOutput } from "../slack/functions"
 
 export default async request => {
     var formDataBody = await request.formData()
@@ -23,8 +23,26 @@ export default async request => {
                 } else {
                     await postToThread(json, result, true)
                 }
+            } else if (json.actions[0].value.includes(`send_now`)) {
+                await postToThread(json, `You chose to send the calendar URL now.`, true);
+                await getTheCalendarLink(json)
             }
-        } 
+        } else if (json.type === `view_submission`) {
+            var calendarUrl;
+
+            for (var key in json.view.state.values) {
+                calendarUrl = json.view.state.values[key].calendar_url_input.value.toString().trim()
+
+                await HAPPY_SCHEDULE.put(json.user.id, JSON.stringify({
+                    user: json.user.id,
+                    first_time: `no`,
+                    have_calendar_link: `yes`,
+                    calendar_link: `${calendarUrl}`
+                }))
+            }
+
+            return new Response(``, { status: 200 }) // note the empty body here. Slack needs a 200 OK with empty body
+        }
     } catch(error) {
         return new Response(`Error: ${error}`, { status: 500 }) 
     }

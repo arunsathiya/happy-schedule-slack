@@ -43,6 +43,44 @@ const addEmojiToName = item => {
 	}
 }
 
+const introMessageBlocks = (content) => {
+	return [
+		{
+			"type": "section",
+			"text": {
+				"type": "plain_text",
+				"text": `${content}`,
+				"emoji": true
+			}
+		},
+		{
+			"type": "actions",
+			"elements": [
+				{
+					"type": "button",
+					"style": "primary",
+					"text": {
+						"type": "plain_text",
+						"text": "Send now",
+						"emoji": true,
+					},
+					"value": `send_now`
+				},
+				{
+					"type": "button",
+					"style": "danger",
+					"text": {
+						"type": "plain_text",
+						"text": "Send later",
+						"emoji": true,
+					},
+					"value": "send_later"
+				}
+			]
+		}
+	]
+}
+
 const convertToUtc = item => {
 	let getTheTime = item.match(/\T(.*)\Z/).pop()
 	let getHourMinute = getTheTime.slice(0, 4)
@@ -101,4 +139,4 @@ const buildTheMessageBlocks = (items, selectedDate) => {
 	return finalMessage
 }
 
-export { getTheDateBlocks, postToThreadBlocks, buildTheMessageBlocks }
+export { getTheDateBlocks, postToThreadBlocks, buildTheMessageBlocks, introMessageBlocks }

@@ -1,4 +1,4 @@
-import { getTheDateBlocks, postToThreadBlocks, buildTheMessageBlocks } from "./utils"
+import { getTheDateBlocks, postToThreadBlocks, buildTheMessageBlocks, introMessageBlocks, getTheCalendarLinkBlocks } from "./utils"
 import { slackBotToken } from "../../config";
 
 export let getTheDate = async (json) => {
@@ -39,6 +39,8 @@ export let postToThread = async (json, content, inlineResponse) => {
 
     if (content[0].summary) {
         blocks = buildTheMessageBlocks(content, json.actions[0].selected_date)
+    } else if (content.includes(`don't have your calendar`)) {
+        blocks = introMessageBlocks(content)
     } else {
         blocks = postToThreadBlocks(content)
     }
@@ -50,44 +52,107 @@ export let postToThread = async (json, content, inlineResponse) => {
         }
     } else {
         if (json.container) {
-            if (json.container.thread_ts) {
-                slackApiUrl = `https://slack.com/api/chat.postMessage`
-                dataForFetch = {
-                    username: `Happy Schedule`,
-                    icon_emoji: `:happy-schedule:`,
-                    channel: json.container.channel_id,
-                    thread_ts: json.container.thread_ts,
-                    blocks: blocks
-                }
-            } else {
-                slackApiUrl = `https://slack.com/api/chat.postMessage`
-                dataForFetch = {
-                    username: `Happy Schedule`,
-                    icon_emoji: `:happy-schedule:`,
-                    channel: json.container.channel_id,
-                    blocks: blocks
-                }
+            slackApiUrl = `https://slack.com/api/chat.postMessage`
+            dataForFetch = {
+                username: `Happy Schedule`,
+                icon_emoji: `:happy-schedule:`,
+                channel: json.container.channel_id,
+                thread_ts: json.container.thread_ts,
+                blocks: blocks
             }
         } else {
-            if (json.thread_ts) {
-                slackApiUrl = `https://slack.com/api/chat.postMessage`
-                dataForFetch = {
-                    username: `Happy Schedule`,
-                    icon_emoji: `:happy-schedule:`,
-                    channel: json.channel,
-                    thread_ts: json.ts,
-                    blocks: blocks
-                }
-            } else {
-                slackApiUrl = `https://slack.com/api/chat.postMessage`
-                dataForFetch = {
-                    username: `Happy Schedule`,
-                    icon_emoji: `:happy-schedule:`,
-                    channel: json.channel,
-                    blocks: blocks
-                }
+            slackApiUrl = `https://slack.com/api/chat.postMessage`
+            dataForFetch = {
+                username: `Happy Schedule`,
+                icon_emoji: `:happy-schedule:`,
+                channel: json.channel,
+                thread_ts: json.ts,
+                blocks: blocks
             }
         }
+    }
+    
+    let optionsForFetch = {
+        'method': `POST`,
+        'body': JSON.stringify(dataForFetch),
+        'headers': {
+            'Authorization': `Bearer ${slackBotToken}`,
+            'Content-Type': 'application/json',
+        }
+    }
+    
+    let response = await fetch(slackApiUrl, optionsForFetch)
+    return response
+}
+
+export let getTheCalendarLink = async (json) => {
+    let slackApiUrl, dataForFetch
+
+    slackApiUrl = `https://slack.com/api/views.open`
+    
+    dataForFetch = {
+        trigger_id: json.trigger_id,
+        view: JSON.stringify({
+            "type": "modal",
+            "title": {
+                "type": "plain_text",
+                "text": "Happy Schedule",
+                "emoji": true
+            },
+            "submit": {
+                "type": "plain_text",
+                "text": "Submit",
+                "emoji": true
+            },
+            "close": {
+                "type": "plain_text",
+                "text": "Cancel",
+                "emoji": true
+            },
+            "blocks": [
+                {
+                    "type": "input",
+                    "element": {
+                        "type": "plain_text_input",
+                        "action_id": "calendar_url_input",
+                        "placeholder": {
+                            "type": "plain_text",
+                            "text": "Enter your calendar URL"
+                        }
+                    },
+                    "label": {
+                        "type": "plain_text",
+                        "text": "Calendar URL"
+                    },
+                    "hint": {
+                        "type": "plain_text",
+                        "text": "You can find it on your Happiness Scheduler's integrations page"
+                    }
+                }
+            ]
+        })
+    }
+    
+    let optionsForFetch = {
+        'method': `POST`,
+        'body': JSON.stringify(dataForFetch),
+        'headers': {
+            'Authorization': `Bearer ${slackBotToken}`,
+            'Content-Type': 'application/json',
+        }
+    }
+    
+    let response = await fetch(slackApiUrl, optionsForFetch)
+    return response
+}
+
+export let hardOutput = async (content) => {
+    let slackApiUrl, dataForFetch
+
+    slackApiUrl = `https://slack.com/api/chat.postMessage`
+    dataForFetch = {
+        channel: `C7WF3KE2U`,
+        blocks: postToThreadBlocks(content)
     }
     
     let optionsForFetch = {
