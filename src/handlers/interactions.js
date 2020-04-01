@@ -57,8 +57,7 @@ export default async request => {
                 }))
             }
 
-            await postToThread(kvObject, `Done! I have receive your calendar link.`, true)
-            await getTheDate(json)
+            await postToThread(kvObject, `Done! I have received your calendar link.`, true)
 
             return new Response(``, { status: 200 }) // note the empty body here. Slack needs a 200 OK with empty body
         }

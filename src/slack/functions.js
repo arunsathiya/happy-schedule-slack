@@ -42,6 +42,7 @@ export let postToThread = async (json, content, inlineResponse) => {
     } else if (content.includes(`don't have your calendar`)) {
         blocks = introMessageBlocks(content)
     } else if (content.includes(`received your calendar`)) {
+        var today = new Date();
         var date = today.getFullYear()+'-'+(("0" + (today.getMonth() + 1)).slice(-2))+'-'+today.getDate();
         blocks = getTheDateBlocks(date)   
     } else {
