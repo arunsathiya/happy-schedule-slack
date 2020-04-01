@@ -1,4 +1,4 @@
-import { getTheDateBlocks, postToThreadBlocks, buildTheMessageBlocks, introMessageBlocks, getTheCalendarLinkBlocks } from "./utils"
+import { getTheDateBlocks, postToThreadBlocks, buildTheMessageBlocks, introMessageBlocks, afkDayBlocks } from "./utils"
 import { slackBotToken } from "../../config";
 
 export let getTheDate = async (json) => {
@@ -46,6 +46,10 @@ export let postToThread = async (json, content, inlineResponse) => {
         var today = new Date();
         var date = today.getFullYear()+'-'+(("0" + (today.getMonth() + 1)).slice(-2))+'-'+today.getDate();
         blocks = getTheDateBlocks(date)   
+    } else if (content.includes(`AFK day`)) {
+        var today = new Date();
+        var date = today.getFullYear()+'-'+(("0" + (today.getMonth() + 1)).slice(-2))+'-'+today.getDate();
+        blocks = afkDayBlocks(content, date)
     } else {
         blocks = postToThreadBlocks(content)
     }
