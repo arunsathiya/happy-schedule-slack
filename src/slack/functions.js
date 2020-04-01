@@ -41,6 +41,9 @@ export let postToThread = async (json, content, inlineResponse) => {
         blocks = buildTheMessageBlocks(content, json.actions[0].selected_date)
     } else if (content.includes(`don't have your calendar`)) {
         blocks = introMessageBlocks(content)
+    } else if (content.includes(`received your calendar`)) {
+        var date = today.getFullYear()+'-'+(("0" + (today.getMonth() + 1)).slice(-2))+'-'+today.getDate();
+        blocks = getTheDateBlocks(date)   
     } else {
         blocks = postToThreadBlocks(content)
     }
@@ -131,28 +134,6 @@ export let getTheCalendarLink = async (json) => {
                 }
             ]
         })
-    }
-    
-    let optionsForFetch = {
-        'method': `POST`,
-        'body': JSON.stringify(dataForFetch),
-        'headers': {
-            'Authorization': `Bearer ${slackBotToken}`,
-            'Content-Type': 'application/json',
-        }
-    }
-    
-    let response = await fetch(slackApiUrl, optionsForFetch)
-    return response
-}
-
-export let hardOutput = async (content) => {
-    let slackApiUrl, dataForFetch
-
-    slackApiUrl = `https://slack.com/api/chat.postMessage`
-    dataForFetch = {
-        channel: `C7WF3KE2U`,
-        blocks: postToThreadBlocks(content)
     }
     
     let optionsForFetch = {

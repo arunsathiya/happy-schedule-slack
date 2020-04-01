@@ -14,11 +14,10 @@ export default async request => {
                     await HAPPY_SCHEDULE.put(event.user, JSON.stringify( {
                         user: event.user,
                         first_time: `yes`,
-                        have_calendar_link: `no` 
                     } ))
                     
                     await postToThread(event, `Hi! 👋\n\nI am a Slack bot to help you find your work shifts from Happiness Scheduler.\n\nI don't have your calendar URL. If you send it in your next response, I shall store it and reuse it in the future.`)
-                } else if (kvObject.have_calendar_link === `no`) {
+                } else if ( !kvObject.calendar_link ) {
                     await postToThread(event, `I don't have your calendar URL. If you send it now, I shall store it and reuse it in the future.`)
                 } else {
                     await getTheDate(event)

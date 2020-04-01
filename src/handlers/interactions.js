@@ -1,5 +1,5 @@
-import { convertToJson, ifObjectIsEmpty } from "../functions"
-import { postToThread, deleteMessage, getTheCalendarLink, hardOutput } from "../slack/functions"
+import { convertToJson } from "../functions"
+import { postToThread, getTheCalendarLink, getTheDate } from "../slack/functions"
 
 export default async request => {
     var formDataBody = await request.formData()
@@ -11,8 +11,11 @@ export default async request => {
             if (json.actions[0].type === `datepicker`) {
                 let selectedDate = json.actions[0].selected_date
                 let convertedDate = selectedDate.replace(/-/g, ``)
+
+                const kvGet = await HAPPY_SCHEDULE.get(json.user.id)
+                const kvObject = JSON.parse(kvGet)
                 
-                let calendarData = await convertToJson(`https://public-api.wordpress.com/wpcom/v2/happytools/internal/v1/schedule/calendar/STZZbEtkZ0hJX2c4ZC1jNFN6VXpyY1RRblh1dXJtc0dSY1V3aFM2a29jQ1E4bXlxQU44MGRlSVd1TzVKZnc9PQ==`)
+                let calendarData = await convertToJson(`${kvObject.calendar_link}`)
 
                 const result = calendarData.filter(item => {
                     return item.startDate.includes(`${convertedDate}`)
@@ -23,11 +26,25 @@ export default async request => {
                 } else {
                     await postToThread(json, result, true)
                 }
+
+                return new Response(``, { status: 200 }) 
             } else if (json.actions[0].value.includes(`send_now`)) {
-                await postToThread(json, `You chose to send the calendar URL now.`, true);
+                await HAPPY_SCHEDULE.put(json.user.id, JSON.stringify( {
+                    user: json.user.id,
+                    first_time: `no`,
+                    calendar_link: ``,
+                    response_url: json.response_url,
+                } ))
+                
+                await postToThread(json, `Thanks!`, true);
                 await getTheCalendarLink(json)
+
+                return new Response(``, { status: 200 }) 
             }
         } else if (json.type === `view_submission`) {
+            const kvGet = await HAPPY_SCHEDULE.get(json.user.id)
+            const kvObject = JSON.parse(kvGet)
+
             var calendarUrl;
 
             for (var key in json.view.state.values) {
@@ -36,10 +53,12 @@ export default async request => {
                 await HAPPY_SCHEDULE.put(json.user.id, JSON.stringify({
                     user: json.user.id,
                     first_time: `no`,
-                    have_calendar_link: `yes`,
                     calendar_link: `${calendarUrl}`
                 }))
             }
+
+            await postToThread(kvObject, `Done! I have receive your calendar link.`, true)
+            await getTheDate(json)
 
             return new Response(``, { status: 200 }) // note the empty body here. Slack needs a 200 OK with empty body
         }
