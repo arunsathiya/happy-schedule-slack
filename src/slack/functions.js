@@ -6,12 +6,12 @@ export let getTheDate = async (json) => {
     var today = new Date();
     var date = today.getFullYear()+'-'+(("0" + (today.getMonth() + 1)).slice(-2))+'-'+today.getDate();
     let slackApiUrl = `https://slack.com/api/chat.postMessage`
-    if (json.thread_ts) {
+    if (json.event) {
         dataForFetch = {
             username: `Happy Schedule`,
             icon_emoji: `:happy-schedule:`,
-            channel: json.channel,
-            thread_ts: json.ts,
+            channel: json.event.channel,
+            thread_ts: json.event.ts,
             blocks: getTheDateBlocks(date)
         }
     } else {
@@ -19,6 +19,7 @@ export let getTheDate = async (json) => {
             username: `Happy Schedule`,
             icon_emoji: `:happy-schedule:`,
             channel: json.channel,
+            thread_ts: json.ts,
             blocks: getTheDateBlocks(date)
         }
     }
