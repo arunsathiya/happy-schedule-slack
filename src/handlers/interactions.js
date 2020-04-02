@@ -39,6 +39,16 @@ export default async request => {
                 await getTheCalendarLink(json)
 
                 return new Response(``, { status: 200 }) 
+            } else if (json.actions[0].value.includes(`send_later`)) {
+                await HAPPY_SCHEDULE.put(json.user.id, JSON.stringify( {
+                    user: json.user.id,
+                    first_time: `no`,
+                    response_url: json.response_url
+                } ))
+
+                await postToThread(json, `Sure! Ping me at @happy-schedule when you are ready.`, true)
+
+                return new Response(``, { status: 200 }) 
             }
         } else if (json.type === `view_submission`) {
             const kvGet = await HAPPY_SCHEDULE.get(json.user.id)
