@@ -2,27 +2,44 @@ import { getTheDateBlocks, postToThreadBlocks, buildTheMessageBlocks, introMessa
 import { slackBotToken } from "../../config";
 
 export let getTheDate = async (json) => {
-    let dataForFetch
+    let dataForFetch, slackApiUrl
+
     var today = new Date();
     var date = today.getFullYear()+'-'+(("0" + (today.getMonth() + 1)).slice(-2))+'-'+today.getDate();
-    let slackApiUrl = `https://slack.com/api/chat.postMessage`
+    
+    // for requests from slash command
+    if (json.channel_id) {
+        slackApiUrl = `https://slack.com/api/chat.postEphemeral`
+    } else {
+        slackApiUrl = `https://slack.com/api/chat.postMessage`
+    }
+    
     if (json.event) {
         dataForFetch = {
             username: `Happy Schedule`,
             icon_emoji: `:happy-schedule:`,
-            channel: json.event.channel,
-            thread_ts: json.event.ts,
+            channel: json.event.channel, // for requests from an event
+            thread_ts: json.event.ts, // for requests from an event
             blocks: getTheDateBlocks(date)
         }
     } else {
-        dataForFetch = {
-            username: `Happy Schedule`,
-            icon_emoji: `:happy-schedule:`,
-            channel: json.channel,
-            thread_ts: json.ts,
-            blocks: getTheDateBlocks(date)
+        if (json.channel_id) {
+            dataForFetch = {
+                channel: json.channel_id, // for requests from the slash command
+                blocks: getTheDateBlocks(date),
+                user: json.user_id
+            }
+        } else {
+            dataForFetch = {
+                username: `Happy Schedule`,
+                icon_emoji: `:happy-schedule:`,
+                channel: json.channel, // for requests from elsewhere
+                thread_ts: json.ts,
+                blocks: getTheDateBlocks(date)
+            }
         }
     }
+
     let optionsForFetch = {
         'method': `POST`,
         'body': JSON.stringify(dataForFetch),
@@ -31,6 +48,7 @@ export let getTheDate = async (json) => {
             'Content-Type': 'application/json',
         }
     }
+    
     let response = await fetch(slackApiUrl, optionsForFetch)
     return response
 }

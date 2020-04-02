@@ -8,4 +8,16 @@ const convertToJson = async (fileLocation) => {
     return data
 }
 
-export { convertToJson }
+const queryStringToJson = async (item) => {
+    var pairs = item.split('&');
+
+    var result = {};
+    pairs.forEach(function(pair) {
+        pair = pair.split('=');
+        result[pair[0]] = decodeURIComponent(pair[1] || '');
+    });
+
+    return JSON.parse(JSON.stringify(result))
+}
+
+export { convertToJson, queryStringToJson }
