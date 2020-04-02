@@ -26,7 +26,7 @@ export default async request => {
             return new Response(`Done.`, { status: 200 }) 
         } else if (event.type === `message`) {
             if (event.user) {
-                await postToThread(event, `I cannot respond to private messags.`)
+                await postToThread(event, `I cannot respond to private messages. But you can use the slash command on this message channel (not on threads though)!`)
             }
             return new Response(`OK`, { status: 200 }) 
         } else {
