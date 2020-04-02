@@ -63,7 +63,7 @@ export default async request => {
             const kvGet = await HAPPY_SCHEDULE.get(json.user.id)
             const kvObject = JSON.parse(kvGet)
 
-            await postToThread(kvObject, `I don't have your calendar URL so far`, true)
+            await postToThread(kvObject, `I don't have your calendar URL so far. I need it to process any shift lookups.`, true)
 
             return new Response(``, { status: 200 }) 
         }

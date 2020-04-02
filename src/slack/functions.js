@@ -138,7 +138,8 @@ export let getTheCalendarLink = async (json) => {
                         "text": "You can find it on your Happiness Scheduler's integrations page"
                     }
                 }
-            ]
+            ],
+            "notify_on_close": true
         })
     }
     
