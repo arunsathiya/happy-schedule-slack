@@ -1,5 +1,5 @@
 import { convertToJson } from "../functions"
-import { postToThread, getTheCalendarLink, getTheDate } from "../slack/functions"
+import { postToThread, getTheCalendarLink } from "../slack/functions"
 
 export default async request => {
     var formDataBody = await request.formData()
@@ -32,7 +32,6 @@ export default async request => {
                 await HAPPY_SCHEDULE.put(json.user.id, JSON.stringify( {
                     user: json.user.id,
                     first_time: `no`,
-                    calendar_link: ``,
                     response_url: json.response_url,
                 } ))
                 
@@ -60,6 +59,13 @@ export default async request => {
             await postToThread(kvObject, `Done! I have received your calendar link.`, true)
 
             return new Response(``, { status: 200 }) // note the empty body here. Slack needs a 200 OK with empty body
+        } else if (json.type === `view_closed`) {
+            const kvGet = await HAPPY_SCHEDULE.get(json.user.id)
+            const kvObject = JSON.parse(kvGet)
+
+            await postToThread(kvObject, `I don't have your calendar URL so far`, true)
+
+            return new Response(``, { status: 200 }) 
         }
     } catch(error) {
         return new Response(`Error: ${error}`, { status: 500 }) 
