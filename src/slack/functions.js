@@ -11,7 +11,7 @@ export let getTheDate = async (json) => {
 
     if (json.type === `message_action`) {
         dataForFetch = {
-            channel: json.channel.id,
+            channel: json.channel.id, // this check is handle data for shortcuts
             blocks: getTheDateBlocks(date),
             user: json.user.id,
             thread_ts: json.message.ts

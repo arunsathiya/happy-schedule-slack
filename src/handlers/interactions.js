@@ -78,6 +78,7 @@ export default async request => {
             return new Response(``, { status: 200 }) // note the empty body here. Slack needs a 200 OK with empty body
         } else if (json.type === `message_action` && json.callback_id === `happy_schedule_shortcut`) {
             if (json.user) {
+                // this check is to handle shortcut interaction on a channel message (not a thread message)
                 if (!json.message.thread_ts) {
                     const kvGet = await HAPPY_SCHEDULE.get(json.user.id)
                     const kvObject = JSON.parse(kvGet)
