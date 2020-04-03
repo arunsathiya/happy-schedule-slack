@@ -1,5 +1,5 @@
 import { convertToJson } from "../functions"
-import { postToThread, getTheCalendarLink, getTheDate } from "../slack/functions"
+import { postReply, getTheCalendarLink, getTheDate } from "../slack/functions"
 
 export default async request => {
     var formDataBody = await request.formData()
@@ -22,9 +22,9 @@ export default async request => {
                 })
                 
                 if (Object.keys(result).length === 0) {
-                    await postToThread(json, `No shifts found. Perhaps your AFK day?`, true)
+                    await postReply(json, `No shifts found. Perhaps your AFK day?`, true)
                 } else {
-                    await postToThread(json, result, true)
+                    await postReply(json, result, true)
                 }
 
                 return new Response(``, { status: 200 }) 
@@ -35,7 +35,7 @@ export default async request => {
                     response_url: json.response_url,
                 } ))
                 
-                await postToThread(json, `Thanks!`, true);
+                await postReply(json, `Thanks!`, true);
                 await getTheCalendarLink(json)
 
                 return new Response(``, { status: 200 }) 
@@ -46,7 +46,7 @@ export default async request => {
                     response_url: json.response_url
                 } ))
 
-                await postToThread(json, `Sure!`, true)
+                await postReply(json, `Sure!`, true)
 
                 return new Response(``, { status: 200 }) // note the empty body here. Slack needs a 200 OK with empty body
             }
@@ -66,14 +66,14 @@ export default async request => {
                 }))
             }
 
-            await postToThread(kvObject, `Done! I have received your calendar link.`, true)
+            await postReply(kvObject, `Done! I have received your calendar link.`, true)
 
             return new Response(``, { status: 200 }) // note the empty body here. Slack needs a 200 OK with empty body
         } else if (json.type === `view_closed`) {
             const kvGet = await HAPPY_SCHEDULE.get(json.user.id)
             const kvObject = JSON.parse(kvGet)
 
-            await postToThread(kvObject, `I don't have your calendar URL so far. I need it to process any shift lookups.`, true)
+            await postReply(kvObject, `I don't have your calendar URL so far. I need it to process any shift lookups.`, true)
 
             return new Response(``, { status: 200 }) // note the empty body here. Slack needs a 200 OK with empty body
         } else if (json.type === `message_action` && json.callback_id === `happy_schedule_shortcut`) {
@@ -89,9 +89,9 @@ export default async request => {
                             first_time: `yes`,
                         } ))
                         
-                        await postToThread(json, `Hi! 👋\n\nI am a Slack bot to help you find your work shifts from Happiness Scheduler.\n\nI don't have your calendar URL. If you send it in your next response, I shall store it and reuse it in the future.`)
+                        await postReply(json, `Hi! 👋\n\nI am a Slack bot to help you find your work shifts from Happiness Scheduler.\n\nI don't have your calendar URL. If you send it in your next response, I shall store it and reuse it in the future.`)
                     } else if ( !kvObject.calendar_link ) {
-                        await postToThread(json, `I don't have your calendar URL. If you send it now, I shall store it and reuse it in the future.`)
+                        await postReply(json, `I don't have your calendar URL. If you send it now, I shall store it and reuse it in the future.`)
                     } else {
                         await getTheDate(json)
                     }
@@ -105,9 +105,9 @@ export default async request => {
                             first_time: `yes`,
                         } ))
                         
-                        await postToThread(json, `Hi! 👋\n\nI am a Slack bot to help you find your work shifts from Happiness Scheduler.\n\nI don't have your calendar URL. If you send it in your next response, I shall store it and reuse it in the future.`)
+                        await postReply(json, `Hi! 👋\n\nI am a Slack bot to help you find your work shifts from Happiness Scheduler.\n\nI don't have your calendar URL. If you send it in your next response, I shall store it and reuse it in the future.`)
                     } else if ( !kvObject.calendar_link ) {
-                        await postToThread(json, `I don't have your calendar URL. If you send it now, I shall store it and reuse it in the future.`)
+                        await postReply(json, `I don't have your calendar URL. If you send it now, I shall store it and reuse it in the future.`)
                     } else {
                         await getTheDate(json)
                     }

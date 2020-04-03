@@ -46,7 +46,7 @@ export let getTheDate = async (json) => {
     return response
 }
 
-export let postToThread = async (json, content, inlineResponse) => {
+export let postReply = async (json, content, inlineResponse) => {
     let blocks, slackApiUrl, dataForFetch, optionsForFetch
 
     if (content[0].summary) {

@@ -1,4 +1,4 @@
-import { getTheDate, postToThread } from "../slack/functions"
+import { getTheDate, postReply } from "../slack/functions"
 
 export default async request => {
     const body = await request.text()
@@ -7,7 +7,7 @@ export default async request => {
     try {
         if (event.type === `message`) {
             if (event.user) {
-                await postToThread(event, `I cannot respond to private messages. But you can use the slash command on this message channel (not on threads though)!`)
+                await postReply(event, `I cannot respond to private messages. But you can use the slash command on this message channel (not on threads though)!`)
             }
             return new Response(`OK`, { status: 200 }) 
         } else {

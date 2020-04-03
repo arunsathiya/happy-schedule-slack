@@ -1,4 +1,4 @@
-import { postToThread, getTheDate } from "../../slack/functions"
+import { postReply, getTheDate } from "../../slack/functions"
 import { queryStringToJson } from "../../functions"
 
 export default async request => {
@@ -16,9 +16,9 @@ export default async request => {
                     first_time: `yes`,
                 } ))
                 
-                await postToThread(json, `Hi! 👋\n\nI am a Slack bot to help you find your work shifts from Happiness Scheduler.\n\nI don't have your calendar URL. If you send it in your next response, I shall store it and reuse it in the future.`, true)
+                await postReply(json, `Hi! 👋\n\nI am a Slack bot to help you find your work shifts from Happiness Scheduler.\n\nI don't have your calendar URL. If you send it in your next response, I shall store it and reuse it in the future.`, true)
             } else if ( !kvObject.calendar_link ) {
-                await postToThread(json, `I don't have your calendar URL. If you send it now, I shall store it and reuse it in the future.`, true)
+                await postReply(json, `I don't have your calendar URL. If you send it now, I shall store it and reuse it in the future.`, true)
             } else {
                 await getTheDate(json)
             }
