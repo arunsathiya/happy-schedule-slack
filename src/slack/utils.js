@@ -115,7 +115,7 @@ const convertToUtc = item => {
 	return getHourMinute
 }
 
-const buildTheMessageBlocks = (items, selectedDate) => {
+const buildTheScheduleBlocks = (items, selectedDate) => {
 	let scheduleList = ''
 
 	items.forEach(item => {
@@ -167,4 +167,4 @@ const buildTheMessageBlocks = (items, selectedDate) => {
 	return finalMessage
 }
 
-export { getTheDateBlocks, postToThreadBlocks, buildTheMessageBlocks, introMessageBlocks, afkDayBlocks }
+export { getTheDateBlocks, postToThreadBlocks, buildTheScheduleBlocks, introMessageBlocks, afkDayBlocks }

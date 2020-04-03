@@ -1,4 +1,4 @@
-import { getTheDateBlocks, postToThreadBlocks, buildTheMessageBlocks, introMessageBlocks, afkDayBlocks } from "./utils"
+import { getTheDateBlocks, postToThreadBlocks, buildTheScheduleBlocks, introMessageBlocks, afkDayBlocks } from "./utils"
 import { slackBotToken } from "../../config";
 
 export let getTheDate = async (json) => {
@@ -7,36 +7,20 @@ export let getTheDate = async (json) => {
     var today = new Date();
     var date = today.getFullYear()+'-'+(("0" + (today.getMonth() + 1)).slice(-2))+'-'+today.getDate();
     
-    // for requests from slash command
-    if (json.channel_id) {
-        slackApiUrl = `https://slack.com/api/chat.postEphemeral`
-    } else {
-        slackApiUrl = `https://slack.com/api/chat.postMessage`
-    }
-    
-    if (json.event) {
+    slackApiUrl = `https://slack.com/api/chat.postEphemeral`
+
+    if (json.type === `message_action`) {
         dataForFetch = {
-            username: `Happy Schedule`,
-            icon_emoji: `:happy-schedule:`,
-            channel: json.event.channel, // for requests from an event
-            thread_ts: json.event.ts, // for requests from an event
-            blocks: getTheDateBlocks(date)
+            channel: json.channel.id,
+            blocks: getTheDateBlocks(date),
+            user: json.user.id,
+            thread_ts: json.message.ts
         }
     } else {
-        if (json.channel_id) {
-            dataForFetch = {
-                channel: json.channel_id, // for requests from the slash command
-                blocks: getTheDateBlocks(date),
-                user: json.user_id
-            }
-        } else {
-            dataForFetch = {
-                username: `Happy Schedule`,
-                icon_emoji: `:happy-schedule:`,
-                channel: json.channel, // for requests from elsewhere
-                thread_ts: json.ts,
-                blocks: getTheDateBlocks(date)
-            }
+        dataForFetch = {
+            channel: json.channel_id, // for requests from the slash command
+            blocks: getTheDateBlocks(date),
+            user: json.user_id
         }
     }
 
@@ -54,10 +38,10 @@ export let getTheDate = async (json) => {
 }
 
 export let postToThread = async (json, content, inlineResponse) => {
-    let blocks, slackApiUrl, dataForFetch
+    let blocks, slackApiUrl, dataForFetch, optionsForFetch
 
     if (content[0].summary) {
-        blocks = buildTheMessageBlocks(content, json.actions[0].selected_date)
+        blocks = buildTheScheduleBlocks(content, json.actions[0].selected_date)
     } else if (content.includes(`don't have your calendar`)) {
         blocks = introMessageBlocks(content)
     } else if (content.includes(`received your calendar`)) {
@@ -87,6 +71,13 @@ export let postToThread = async (json, content, inlineResponse) => {
                 thread_ts: json.container.thread_ts,
                 blocks: blocks
             }
+        } else if (json.message) {
+            slackApiUrl = `https://slack.com/api/chat.postMessage`
+            dataForFetch = {
+                channel: json.channel.id,
+                thread_ts: json.message.ts,
+                blocks: blocks
+            }
         } else {
             slackApiUrl = `https://slack.com/api/chat.postMessage`
             dataForFetch = {
@@ -99,7 +90,7 @@ export let postToThread = async (json, content, inlineResponse) => {
         }
     }
     
-    let optionsForFetch = {
+    optionsForFetch = {
         'method': `POST`,
         'body': JSON.stringify(dataForFetch),
         'headers': {

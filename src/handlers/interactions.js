@@ -1,5 +1,5 @@
 import { convertToJson } from "../functions"
-import { postToThread, getTheCalendarLink } from "../slack/functions"
+import { postToThread, getTheCalendarLink, getTheDate } from "../slack/functions"
 
 export default async request => {
     var formDataBody = await request.formData()
@@ -7,7 +7,7 @@ export default async request => {
     var json = JSON.parse(jsonOld.payload)
 
     try {
-        if (json && json.type === `block_actions`) {
+        if (json.type === `block_actions`) {
             if (json.actions[0].type === `datepicker`) {
                 let selectedDate = json.actions[0].selected_date
                 let convertedDate = selectedDate.replace(/-/g, ``)
@@ -48,7 +48,7 @@ export default async request => {
 
                 await postToThread(json, `Sure! Ping me at @happy-schedule when you are ready.`, true)
 
-                return new Response(``, { status: 200 }) 
+                return new Response(``, { status: 200 }) // note the empty body here. Slack needs a 200 OK with empty body
             }
         } else if (json.type === `view_submission`) {
             const kvGet = await HAPPY_SCHEDULE.get(json.user.id)
@@ -75,7 +75,45 @@ export default async request => {
 
             await postToThread(kvObject, `I don't have your calendar URL so far. I need it to process any shift lookups.`, true)
 
-            return new Response(``, { status: 200 }) 
+            return new Response(``, { status: 200 }) // note the empty body here. Slack needs a 200 OK with empty body
+        } else if (json.type === `message_action` && json.callback_id === `happy_schedule_shortcut`) {
+            if (json.user) {
+                if (!json.message.thread_ts) {
+                    const kvGet = await HAPPY_SCHEDULE.get(json.user.id)
+                    const kvObject = JSON.parse(kvGet)
+                    
+                    if (kvGet === null) {
+                        await HAPPY_SCHEDULE.put(json.user.id, JSON.stringify( {
+                            user: json.user.id,
+                            first_time: `yes`,
+                        } ))
+                        
+                        await postToThread(json, `Hi! 👋\n\nI am a Slack bot to help you find your work shifts from Happiness Scheduler.\n\nI don't have your calendar URL. If you send it in your next response, I shall store it and reuse it in the future.`)
+                    } else if ( !kvObject.calendar_link ) {
+                        await postToThread(json, `I don't have your calendar URL. If you send it now, I shall store it and reuse it in the future.`)
+                    } else {
+                        await getTheDate(json)
+                    }
+                } else {
+                    const kvGet = await HAPPY_SCHEDULE.get(json.user.id)
+                    const kvObject = JSON.parse(kvGet)
+                    
+                    if (kvGet === null) {
+                        await HAPPY_SCHEDULE.put(json.user.id, JSON.stringify( {
+                            user: json.user.id,
+                            first_time: `yes`,
+                        } ))
+                        
+                        await postToThread(json, `Hi! 👋\n\nI am a Slack bot to help you find your work shifts from Happiness Scheduler.\n\nI don't have your calendar URL. If you send it in your next response, I shall store it and reuse it in the future.`)
+                    } else if ( !kvObject.calendar_link ) {
+                        await postToThread(json, `I don't have your calendar URL. If you send it now, I shall store it and reuse it in the future.`)
+                    } else {
+                        await getTheDate(json)
+                    }
+                }
+            }
+
+            return new Response(``, { status: 200 }) // note the empty body here. Slack needs a 200 OK with empty body
         }
     } catch(error) {
         return new Response(`Error: ${error}`, { status: 500 }) 
