@@ -46,7 +46,7 @@ export default async request => {
                     response_url: json.response_url
                 } ))
 
-                await postToThread(json, `Sure! Ping me at @happy-schedule when you are ready.`, true)
+                await postToThread(json, `Sure!`, true)
 
                 return new Response(``, { status: 200 }) // note the empty body here. Slack needs a 200 OK with empty body
             }

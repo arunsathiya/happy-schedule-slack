@@ -10,11 +10,20 @@ export let getTheDate = async (json) => {
     slackApiUrl = `https://slack.com/api/chat.postEphemeral`
 
     if (json.type === `message_action`) {
-        dataForFetch = {
-            channel: json.channel.id, // this check is handle data for shortcuts
-            blocks: getTheDateBlocks(date),
-            user: json.user.id,
-            thread_ts: json.message.ts
+        // this check is to see if the message is from a channel or from a thread, and respond accordingly
+        if (!json.message.thread_ts) {
+            dataForFetch = {
+                channel: json.channel.id, // this check is to handle data for shortcuts
+                blocks: getTheDateBlocks(date),
+                user: json.user.id,
+            }
+        } else {
+            dataForFetch = {
+                channel: json.channel.id, // this check is to handle data for shortcuts
+                blocks: getTheDateBlocks(date),
+                user: json.user.id,
+                thread_ts: json.message.thread_ts,
+            }
         }
     } else {
         dataForFetch = {
@@ -63,26 +72,36 @@ export let postToThread = async (json, content, inlineResponse) => {
         }
     } else {
         if (json.container) {
-            slackApiUrl = `https://slack.com/api/chat.postMessage`
+            slackApiUrl = `https://slack.com/api/chat.postEphemeral`
+            
             dataForFetch = {
-                username: `Happy Schedule`,
-                icon_emoji: `:happy-schedule:`,
+                user: json.user.id,
                 channel: json.container.channel_id,
                 thread_ts: json.container.thread_ts,
                 blocks: blocks
             }
         } else if (json.message) {
-            slackApiUrl = `https://slack.com/api/chat.postMessage`
-            dataForFetch = {
-                channel: json.channel.id,
-                thread_ts: json.message.ts,
-                blocks: blocks
+            slackApiUrl = `https://slack.com/api/chat.postEphemeral`
+            
+            if (!json.message.thread_ts) {
+                dataForFetch = {
+                    user: json.user.id,
+                    channel: json.channel.id,
+                    blocks: blocks
+                }
+            } else {
+                dataForFetch = {
+                    user: json.user.id,
+                    channel: json.channel.id,
+                    thread_ts: json.message.ts,
+                    blocks: blocks
+                }
             }
         } else {
             slackApiUrl = `https://slack.com/api/chat.postMessage`
+            
             dataForFetch = {
-                username: `Happy Schedule`,
-                icon_emoji: `:happy-schedule:`,
+                user: json.user.id,
                 channel: json.channel,
                 thread_ts: json.ts,
                 blocks: blocks
