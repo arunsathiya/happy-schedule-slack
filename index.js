@@ -1,11 +1,17 @@
 import webhook from './src/handlers/webhook'
 import interactions from './src/handlers/interactions'
 import happySchedule from './src/handlers/slash/happy-schedule'
+import { legitSlackRequest } from './src/functions'
 
 const Router = require('./router')
 
 addEventListener('fetch', event => {
-    event.respondWith(handleRequest(event.request))
+    const legit = legitSlackRequest(event.request)
+    if (!legit) {
+        return new Response(`Bad actor`, { status: 403 }) 
+    } else {
+        event.respondWith(handleRequest(event.request))
+    }
 })
 
 async function handleRequest(request) {
