@@ -60,15 +60,19 @@ const postToThreadBlocks = content => {
 }
 
 const addEmojiToName = item => {
-	if (item.includes(`Woo`)) {
-		return item.replace(`Woo`, `:woologo: Woo`)
-	} else if (item.includes(`JP`)) {
-		return item.replace(`JP`, `:jetpack: JP`)
-	} else if (item.includes(`WP`)) {
-		return item.replace(`WP`, `:wp: WP`)
-	} else {
-		return item
-	}
+	const replaceMap = new Map([
+		['Woo Tickets', ':woologo: :zendesk2: Woo Tickets'],
+		['Woo Chat Reserve', ':woologo: :chat-blue: Woo Chat Reserve'],
+		['Woo Chat', ':woologo: :chat-green: Woo Chat'],
+		['WP Tickets', ':wordpress: :zendesk2: WPcom Tickets'],
+		['WP Reserve', ':wordpress: :chat-blue: WPcom Chat Reserve'],
+		['WP Chat', ':wordpress: :chat-green: WPcom Chat'],
+		['Jetpack Tickets', ':jetpack: :zendesk2: Jetpack Tickets'],
+		['Jetpack Chat Reserve', ':jetpack: :chat-blue: Jetpack Chat Reserve'],
+		['Jetpack Chat', ':jetpack: :chat-green: Jetpack Chat'],
+	])
+
+	return replaceMap.get(item)
 }
 
 const introMessageBlocks = (content) => {
