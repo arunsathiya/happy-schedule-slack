@@ -122,6 +122,15 @@ const convertToUtc = item => {
 const buildTheScheduleBlocks = (items, selectedDate) => {
 	let scheduleList = ''
 
+	items.sort((a, b) => {
+		var keyA = convertToUtc(a.startDate)
+		var keyB = convertToUtc(b.startDate)
+
+		if (keyA < keyB) return -1;
+		if (keyA > keyB) return 1;
+		return 0;
+	})
+
 	items.forEach(item => {
 		scheduleList += `{
 			"type": "section",
