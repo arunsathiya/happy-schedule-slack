@@ -98,13 +98,21 @@ export let postReply = async (json, content, inlineResponse) => {
                 }
             }
         } else {
-            slackApiUrl = `https://slack.com/api/chat.postMessage`
+            slackApiUrl = `https://slack.com/api/chat.postEphemeral`
             
-            dataForFetch = {
-                user: json.user.id,
-                channel: json.channel,
-                thread_ts: json.ts,
-                blocks: blocks
+            if (json.channel_id) {
+                dataForFetch = {
+                    user: json.user_id,
+                    channel: json.channel_id,
+                    blocks: blocks
+                }
+            } else {
+                dataForFetch = {
+                    user: json.user.id,
+                    channel: json.channel,
+                    thread_ts: json.ts,
+                    blocks: blocks
+                }
             }
         }
     }
@@ -180,6 +188,23 @@ export let getTheCalendarLink = async (json) => {
         }
     }
     
+    let response = await fetch(slackApiUrl, optionsForFetch)
+    return response
+}
+
+export let isMember = async (channelId) => {
+    let optionsForFetch, slackApiUrl
+
+    slackApiUrl = `https://slack.com/api/conversations.members?channel=${channelId}`
+
+    optionsForFetch = {
+        'method': `GET`,
+        'headers': {
+            'Authorization': `Bearer ${slackBotToken}`,
+            'Content-Type': `application/x-www-form-urlencoded`
+        }
+    }
+
     let response = await fetch(slackApiUrl, optionsForFetch)
     return response
 }
