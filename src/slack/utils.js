@@ -64,12 +64,18 @@ const addEmojiToName = item => {
 		['Woo Tickets', ':woologo: :zendesk2: Woo Tickets'],
 		['Woo Chat Reserve', ':woologo: :chat-blue: Woo Chat Reserve'],
 		['Woo Chat', ':woologo: :chat-green: Woo Chat'],
+		['Woo Escalated Tickets', ':woologo: :zendesk2: Woo Escalated Tickets'],
+		['Woo Forums', ':woologo: :chat: Woo Forums'],
 		['WP Tickets', ':wordpress: :zendesk2: WPcom Tickets'],
 		['WP Reserve', ':wordpress: :chat-blue: WPcom Chat Reserve'],
 		['WP Chat', ':wordpress: :chat-green: WPcom Chat'],
-		['Jetpack Tickets', ':jetpack: :zendesk2: Jetpack Tickets'],
-		['Jetpack Chat Reserve', ':jetpack: :chat-blue: Jetpack Chat Reserve'],
-		['Jetpack Chat', ':jetpack: :chat-green: Jetpack Chat'],
+		['WP Concierge', ':wordpress: :zoom: WPcom Concierge'],
+		['WP Project', ':wordpress: WPcom Project'],
+		['JP Tickets', ':jetpack: :zendesk2: JP Tickets'],
+		['JP Ticket Reserve', ':jetpack: :zendesk2: JP Ticket Reserve'],
+		['JP Reserve', ':jetpack: :chat-blue: JP Reserve'],
+		['JP Sat', ':jetpack: JP Sat'],
+		['JP Project', ':jetpack: JP Project'],
 	])
 
 	return replaceMap.get(item)
