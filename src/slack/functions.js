@@ -1,12 +1,13 @@
 import { getTheDateBlocks, postToThreadBlocks, buildTheScheduleBlocks, introMessageBlocks, afkDayBlocks } from "./utils"
 import { slackBotToken } from "../../config";
+import { convertToJson } from "../functions";
 
 export let getTheDate = async (json) => {
     let dataForFetch, slackApiUrl
 
     var today = new Date();
-    var date = today.getFullYear()+'-'+(("0" + (today.getMonth() + 1)).slice(-2))+'-'+today.getDate();
-    
+    var date = today.getFullYear() + '-' + (("0" + (today.getMonth() + 1)).slice(-2)) + '-' + today.getDate();
+
     slackApiUrl = `https://slack.com/api/chat.postEphemeral`
 
     if (json.type === `message_action`) {
@@ -41,26 +42,71 @@ export let getTheDate = async (json) => {
             'Content-Type': 'application/json',
         }
     }
-    
+
     let response = await fetch(slackApiUrl, optionsForFetch)
     return response
 }
 
-export let postReply = async (json, content, inlineResponse) => {
+export let handleDateInput = async (json, selectedDate) => {
+    const kvGet = await HAPPY_SCHEDULE.get(json.user.id, `json`)
+
+    const calendarData = await convertToJson(`${kvGet.calendar_link}`)
+
+    const result = calendarData.filter(item => {
+        return item.startDate.includes(`${selectedDate}`)
+    })
+
+    if (Object.keys(result).length === 0) {
+        return `No shifts found. Perhaps your AFK day?`
+    } else {
+        return result
+    }
+}
+
+export let postShifts = async (json, result, selectedDate, utcOrLocal) => {
     let blocks, slackApiUrl, dataForFetch, optionsForFetch
 
-    if (content[0].summary) {
-        blocks = buildTheScheduleBlocks(content, json.actions[0].selected_date)
-    } else if (content.includes(`don't have your calendar`)) {
+    slackApiUrl = json.response_url
+
+    if (result.includes(`AFK day`)) {
+        var today = new Date();
+        var date = today.getFullYear() + '-' + (("0" + (today.getMonth() + 1)).slice(-2)) + '-' + today.getDate();
+        blocks = afkDayBlocks(result, date)
+    } else {
+        if (utcOrLocal.includes(`utc`)) {
+            blocks = buildTheScheduleBlocks(result, selectedDate, `utc`)
+        } else {
+            let timezone = await getTimezone(json.user.id)
+            blocks = buildTheScheduleBlocks(result, selectedDate, `local`, timezone)
+        }
+    }
+
+    dataForFetch = {
+        blocks: blocks
+    }
+
+    optionsForFetch = {
+        'method': `POST`,
+        'body': JSON.stringify(dataForFetch),
+        'headers': {
+            'Authorization': `Bearer ${slackBotToken}`,
+            'Content-Type': 'application/json',
+        }
+    }
+
+    let response = await fetch(slackApiUrl, optionsForFetch)
+    return response
+}
+
+export let postReply = async (json, content, inlineResponse, utcOrLocal) => {
+    let blocks, slackApiUrl, dataForFetch, optionsForFetch
+
+    if (content.includes(`don't have your calendar`)) {
         blocks = introMessageBlocks(content)
     } else if (content.includes(`received your calendar`)) {
         var today = new Date();
-        var date = today.getFullYear()+'-'+(("0" + (today.getMonth() + 1)).slice(-2))+'-'+today.getDate();
-        blocks = getTheDateBlocks(date)   
-    } else if (content.includes(`AFK day`)) {
-        var today = new Date();
-        var date = today.getFullYear()+'-'+(("0" + (today.getMonth() + 1)).slice(-2))+'-'+today.getDate();
-        blocks = afkDayBlocks(content, date)
+        var date = today.getFullYear() + '-' + (("0" + (today.getMonth() + 1)).slice(-2)) + '-' + today.getDate();
+        blocks = getTheDateBlocks(date)
     } else {
         blocks = postToThreadBlocks(content)
     }
@@ -73,7 +119,7 @@ export let postReply = async (json, content, inlineResponse) => {
     } else {
         if (json.container) {
             slackApiUrl = `https://slack.com/api/chat.postEphemeral`
-            
+
             dataForFetch = {
                 user: json.user.id,
                 channel: json.container.channel_id,
@@ -82,7 +128,7 @@ export let postReply = async (json, content, inlineResponse) => {
             }
         } else if (json.message) {
             slackApiUrl = `https://slack.com/api/chat.postEphemeral`
-            
+
             if (!json.message.thread_ts) {
                 dataForFetch = {
                     user: json.user.id,
@@ -99,7 +145,7 @@ export let postReply = async (json, content, inlineResponse) => {
             }
         } else {
             slackApiUrl = `https://slack.com/api/chat.postEphemeral`
-            
+
             if (json.channel_id) {
                 dataForFetch = {
                     user: json.user_id,
@@ -116,7 +162,7 @@ export let postReply = async (json, content, inlineResponse) => {
             }
         }
     }
-    
+
     optionsForFetch = {
         'method': `POST`,
         'body': JSON.stringify(dataForFetch),
@@ -125,7 +171,7 @@ export let postReply = async (json, content, inlineResponse) => {
             'Content-Type': 'application/json',
         }
     }
-    
+
     let response = await fetch(slackApiUrl, optionsForFetch)
     return response
 }
@@ -134,7 +180,7 @@ export let getTheCalendarLink = async (json) => {
     let slackApiUrl, dataForFetch
 
     slackApiUrl = `https://slack.com/api/views.open`
-    
+
     dataForFetch = {
         trigger_id: json.trigger_id,
         view: JSON.stringify({
@@ -178,7 +224,7 @@ export let getTheCalendarLink = async (json) => {
             "notify_on_close": true
         })
     }
-    
+
     let optionsForFetch = {
         'method': `POST`,
         'body': JSON.stringify(dataForFetch),
@@ -187,7 +233,7 @@ export let getTheCalendarLink = async (json) => {
             'Content-Type': 'application/json',
         }
     }
-    
+
     let response = await fetch(slackApiUrl, optionsForFetch)
     return response
 }
@@ -208,3 +254,22 @@ export let isMember = async (channelId) => {
     let response = await fetch(slackApiUrl, optionsForFetch)
     return response
 }
+
+export let getTimezone = async (userId) => {
+    let optionsForFetch, slackApiUrl
+
+    slackApiUrl = `https://slack.com/api/users.info?user=${userId}`
+
+    optionsForFetch = {
+        'method': `GET`,
+        'headers': {
+            'Authorization': `Bearer ${slackBotToken}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+    }
+
+    let response = await fetch(slackApiUrl, optionsForFetch)
+    response = await response.json()
+    
+    return response
+} 

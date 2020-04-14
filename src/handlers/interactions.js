@@ -1,5 +1,5 @@
 import { convertToJson } from "../functions"
-import { postReply, getTheCalendarLink, getTheDate } from "../slack/functions"
+import { postReply, getTheCalendarLink, getTheDate, handleDateInput, postShifts, getUserInfo } from "../slack/functions"
 
 export default async request => {
     var formDataBody = await request.formData()
@@ -11,22 +11,8 @@ export default async request => {
             if (json.actions[0].type === `datepicker`) {
                 let selectedDate = json.actions[0].selected_date
                 let convertedDate = selectedDate.replace(/-/g, ``)
-
-                const kvGet = await HAPPY_SCHEDULE.get(json.user.id)
-                const kvObject = JSON.parse(kvGet)
-                
-                let calendarData = await convertToJson(`${kvObject.calendar_link}`)
-
-                const result = calendarData.filter(item => {
-                    return item.startDate.includes(`${convertedDate}`)
-                })
-                
-                if (Object.keys(result).length === 0) {
-                    await postReply(json, `No shifts found. Perhaps your AFK day?`, true)
-                } else {
-                    await postReply(json, result, true)
-                }
-
+                const result = await handleDateInput(json, convertedDate)
+                await postShifts(json, result, selectedDate, `utc`)
                 return new Response(``, { status: 200 }) 
             } else if (json.actions[0].value.includes(`send_now`)) {
                 await HAPPY_SCHEDULE.put(json.user.id, JSON.stringify( {
@@ -49,6 +35,18 @@ export default async request => {
                 await postReply(json, `Sure!`, true)
 
                 return new Response(``, { status: 200 }) // note the empty body here. Slack needs a 200 OK with empty body
+            } else if (json.actions[0].value.includes(`convert_to_local_timezone`)) {
+                let selectedDate = json.actions[0].value.split(`__`)[1]
+                let convertedDate = selectedDate.replace(/-/g, ``)
+                const result = await handleDateInput(json, convertedDate) 
+                await postShifts(json, result, selectedDate, `local`)
+                return new Response(``, { status: 200 })
+            } else if (json.actions[0].value.includes(`convert_to_utc_timezone`)) {
+                let selectedDate = json.actions[0].value.split(`__`)[1]
+                let convertedDate = selectedDate.replace(/-/g, ``)
+                const result = await handleDateInput(json, convertedDate) 
+                await postShifts(json, result, selectedDate, `utc`)
+                return new Response(``, { status: 200 })
             }
         } else if (json.type === `view_submission`) {
             const kvGet = await HAPPY_SCHEDULE.get(json.user.id)
