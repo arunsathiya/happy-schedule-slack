@@ -61,11 +61,11 @@ const postToThreadBlocks = content => {
 
 const addEmojiToName = item => {
 	const replaceMap = new Map([
-		['Woo Tickets', ':woologo: :zendesk2: Woo Tickets'],
-		['Woo Chat Reserve', ':woologo: :chat-blue: Woo Chat Reserve'],
-		['Woo Chat', ':woologo: :chat-green: Woo Chat'],
-		['Woo Escalated Tickets', ':woologo: :zendesk2: Woo Escalated Tickets'],
-		['Woo Forums', ':woologo: :chat: Woo Forums'],
+		['Woo Tickets', ':woo: :zendesk2: Woo Tickets'],
+		['Woo Chat Reserve', ':woo: :chat-blue: Woo Chat Reserve'],
+		['Woo Chat', ':woo: :chat-green: Woo Chat'],
+		['Woo Escalated Tickets', ':woo: :zendesk2: Woo Escalated Tickets'],
+		['Woo Forums', ':woo: :chat: Woo Forums'],
 		['WP Tickets', ':wordpress: :zendesk2: WPcom Tickets'],
 		['WP Reserve', ':wordpress: :chat-blue: WPcom Chat Reserve'],
 		['WP Chat', ':wordpress: :chat-green: WPcom Chat'],

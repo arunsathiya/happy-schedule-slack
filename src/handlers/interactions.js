@@ -12,7 +12,7 @@ export default async request => {
                 let selectedDate = json.actions[0].selected_date
                 let convertedDate = selectedDate.replace(/-/g, ``)
                 const result = await handleDateInput(json, convertedDate)
-                await postShifts(json, result, selectedDate, `utc`)
+                await postShifts(json, result, selectedDate, `local`)
                 return new Response(``, { status: 200 }) 
             } else if (json.actions[0].value.includes(`send_now`)) {
                 await HAPPY_SCHEDULE.put(json.user.id, JSON.stringify( {
