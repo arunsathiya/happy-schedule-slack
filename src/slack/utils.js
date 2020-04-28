@@ -71,6 +71,7 @@ const addEmojiToName = item => {
 		['WP Chat', ':wordpress: :chat-green: WPcom Chat'],
 		['WP Concierge', ':wordpress: :zoom: WPcom Concierge'],
 		['WP Project', ':wordpress: WPcom Project'],
+		['WP Tickets (Low)', ':wordpress: WPcom Tickets (Low)'],
 		['JP Tickets', ':jetpack: :zendesk2: JP Tickets'],
 		['JP Ticket Reserve', ':jetpack: :zendesk2: JP Ticket Reserve'],
 		['JP Reserve', ':jetpack: :chat-blue: JP Reserve'],
